@@ -1,3 +1,9 @@
 fastapi
 uvicorn
 pytest
+openai
+sqlalchemy[asyncio]
+asyncpg
+alembic
+python-dotenv
+python-multipart
