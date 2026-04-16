@@ -10,6 +10,7 @@ from sqlalchemy.ext.asyncio import create_async_engine
 # Load .env so DATABASE_URL is available even when running alembic from CLI.
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
+from app.core.config import DATABASE_URL as NORMALIZED_DATABASE_URL  # noqa: E402
 from app.db.base import Base  # noqa: E402 — must come after load_dotenv
 import app.db.models  # noqa: F401 — registers all ORM models with Base.metadata
 
@@ -19,7 +20,7 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
-DATABASE_URL = os.environ["DATABASE_URL"]
+DATABASE_URL = NORMALIZED_DATABASE_URL
 
 
 def run_migrations_offline() -> None:

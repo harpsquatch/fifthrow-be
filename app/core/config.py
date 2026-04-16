@@ -15,4 +15,16 @@ def _require(key: str) -> str:
 
 OPENAI_API_KEY: str = os.getenv("OPENAI_API_KEY", "")
 OPENAI_MODEL: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
-DATABASE_URL: str = _require("DATABASE_URL")
+
+
+def _normalise_database_url(raw_url: str) -> str:
+    if raw_url.startswith("postgresql+asyncpg://"):
+        return raw_url
+    if raw_url.startswith("postgres://"):
+        return "postgresql+asyncpg://" + raw_url[len("postgres://"):]
+    if raw_url.startswith("postgresql://"):
+        return "postgresql+asyncpg://" + raw_url[len("postgresql://"):]
+    return raw_url
+
+
+DATABASE_URL: str = _normalise_database_url(_require("DATABASE_URL"))
