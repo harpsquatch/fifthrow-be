@@ -29,6 +29,40 @@ _conversation_memory: dict[str, list[dict]] = {}
 _conversation_followups_seen: dict[str, set[str]] = {}
 _MAX_HISTORY = 40   # message slots retained per conversation (tool messages count)
 _MAX_LOOP    = 10   # max agentic iterations per request (safety valve)
+_DATA_INTENT_TERMS = {
+    "trend",
+    "trends",
+    "count",
+    "counts",
+    "account",
+    "accounts",
+    "company",
+    "companies",
+    "event",
+    "events",
+    "feature",
+    "features",
+    "activation",
+    "adoption",
+    "funnel",
+    "plan",
+    "industry",
+    "mrr",
+    "note",
+    "notes",
+    "product",
+    "products",
+    "analysing",
+    "analyzing",
+    "attach",
+    "attached",
+    "attachment",
+    "upload",
+    "uploaded",
+    "file",
+    "csv",
+    "json",
+}
 
 # ---------------------------------------------------------------------------
 # System prompt
@@ -42,6 +76,14 @@ You have access to tools that query real event data, account data, \
 and internal analyst notes. Your primary responsibility is to answer \
 questions about feature adoption, user behaviour, account health, \
 and product trends.
+
+Uploads and "attachments":
+- Users may upload CSV/JSON in this chat session. Those rows are ingested server-side \
+  into the same data store this session queries. You do not receive raw file bytes.
+- Never say you cannot see attachments or files. Treat uploads as session data: \
+  call tools (account_list, event_sample, notes_list, feature_trend, etc.) to read what was loaded.
+- If the user asks whether you saw their upload or attachment, answer by querying tools \
+  and summarising what is present (or stating that no matching rows exist after querying).
 
 Important context model:
 - The platform itself may be called Fifthrow, but the tracked usage data belongs to customer companies.
@@ -103,6 +145,7 @@ class AssistantService:
 
         executor = ToolExecutor(datasource) if datasource else None
         tools_used: list[str] = []
+        force_tool_first_turn = executor is not None and _looks_data_question(message)
 
         # Build initial messages list (system prompt is never stored in history).
         messages: list[dict] = [{"role": "system", "content": _SYSTEM_PROMPT}] + list(history)
@@ -113,7 +156,11 @@ class AssistantService:
                     model=self.model,
                     messages=messages,
                     tools=TOOL_SCHEMAS if executor else None,
-                    tool_choice="auto" if executor else None,
+                    tool_choice=(
+                        "required"
+                        if force_tool_first_turn and not tools_used
+                        else "auto"
+                    ) if executor else None,
                 )
             except Exception:
                 return {
@@ -277,3 +324,8 @@ def _trim(conv_id: str) -> None:
     turns = _conversation_memory.get(conv_id, [])
     if len(turns) > _MAX_HISTORY:
         _conversation_memory[conv_id] = turns[-_MAX_HISTORY:]
+
+
+def _looks_data_question(text: str) -> bool:
+    lowered = text.lower()
+    return any(term in lowered for term in _DATA_INTENT_TERMS)

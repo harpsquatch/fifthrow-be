@@ -1,0 +1,23 @@
+[
+  {
+    "note_id": "note-orion-001",
+    "timestamp": "2026-04-02T11:00:00Z",
+    "author": "Alex Rivera",
+    "content": "Orion Health (c_009) — PatientFlow onboarding: PMs report high drop-off after first dashboard session; funnel_analysis events trail peers. Worth a dedicated onboarding audit before Q2 goals.",
+    "tags": ["onboarding", "PatientFlow", "Orion Health", "c_009"]
+  },
+  {
+    "note_id": "note-orion-002",
+    "timestamp": "2026-04-04T15:30:00Z",
+    "author": "Jordan Kim",
+    "content": "PatientFlow / c_009: ai_assistant adoption picking up among clinical ops leads; still low among admin roles. Align in-app prompts with admin workflows.",
+    "tags": ["ai_assistant", "PatientFlow", "c_009", "adoption"]
+  },
+  {
+    "note_id": "note-orion-003",
+    "timestamp": "2026-04-06T09:45:00Z",
+    "author": "Sam Okonkwo",
+    "content": "Product team observation — Orion Health asked for clearer funnel stages in PatientFlow; current funnel_analysis labels confuse their compliance review. Follow up with design.",
+    "tags": ["product", "PatientFlow", "funnel_analysis", "Orion Health"]
+  }
+]

@@ -193,12 +193,36 @@ Multiple uploads to the same conversation are supported and additive — each on
 
 ## Architecture
 
+### How layers connect
+
+Request flow is wired in one direction: **HTTP → route → session + datasource → assistant → OpenAI → tools → datasource → response**.
+
+1. **`app/main.py`** — FastAPI app, CORS, mounts `api_router`.
+2. **`app/api/router.py`** — Prefix `/api`, includes `chat` and `upload` routers.
+3. **`app/core/config.py`** — Loads `.env`, validates `DATABASE_URL`, exposes `OPENAI_*` for services.
+4. **`app/db/base.py`** — Async engine + `AsyncSessionLocal` + `get_session()` dependency used by routes.
+5. **`app/api/routes/chat.py`** — For each `POST /api/chat`:
+   - Injects `AsyncSession` via `Depends(get_session)`.
+   - Builds `PostgresDataSource(session)`.
+   - If `upload_store` has data for `conversation_id`, wraps with `MergedDataSource(postgres, uploaded)`; otherwise uses Postgres only.
+   - Calls `AssistantService.answer(..., datasource=ds)`.
+6. **`app/api/routes/upload.py`** — `POST /api/upload` parses file, detects type, appends rows into an `UploadedDataSource` for that `conversation_id` in `upload_store` (in-memory).
+7. **`app/services/assistant_service.py`** — Owns conversation history per `conversation_id`, calls OpenAI with `TOOL_SCHEMAS`, runs the agentic loop until a final text reply; optional follow-up generation.
+8. **`app/services/tool_executor.py`** — Maps OpenAI function names to `DataSource` methods, JSON-serialises results back into the chat as `role: tool` messages.
+9. **`app/services/postgres_datasource.py`** — Implements `DataSource` with SQLAlchemy async queries against `app/db/models.py` tables.
+10. **`app/services/uploaded_datasource.py` / `merged_datasource.py`** — Same `DataSource` contract for uploads and merged reads.
+11. **`app/models/schemas.py`** — Pydantic request/response shapes for `/api/chat` (not used for raw upload JSON).
+12. **`migrations/` + `alembic`** — Schema evolution; runtime queries assume migrated tables.
+
+Mental model: **routes never embed SQL or OpenAI logic**. They assemble **session + datasource**, hand off to **AssistantService**, which only talks to data through **ToolExecutor → DataSource**.
+
 ### DataSource pattern
 
-All data access goes through the `DataSource` abstract base class (`app/services/datasource.py`). It defines seven methods:
+All data access goes through the `DataSource` abstract base class (`app/services/datasource.py`). It defines these methods:
 
 | Method | What it returns |
 |---|---|
+| `product_context()` | Platform/workspace metadata rows |
 | `feature_trend(feature, days, plan)` | Daily counts for one feature |
 | `feature_distribution(days, plan)` | Count per feature, sorted desc |
 | `compare_features(features, days, plan)` | Weekly counts side-by-side |
@@ -222,7 +246,7 @@ The AI assistant and tool executor never know which implementation they are talk
 `AssistantService.answer()` runs a loop with a ceiling of 10 iterations:
 
 1. Append the user message to the in-memory conversation history (keyed by `conversation_id`).
-2. Send the full history plus all seven tool schemas to OpenAI.
+2. Send the full history plus all tool schemas from `TOOL_SCHEMAS` to OpenAI.
 3. If the model returns `tool_calls`, execute each via `ToolExecutor`, which dispatches to the appropriate `DataSource` method and serialises the result as a JSON string.
 4. Append the assistant turn (with `tool_calls`) and each tool result (as `role: tool` messages) to history.
 5. Send the updated history back to OpenAI and repeat.

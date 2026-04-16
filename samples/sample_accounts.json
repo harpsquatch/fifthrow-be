@@ -1,0 +1,32 @@
+[
+  {
+    "company_id": "c_009",
+    "company_name": "Orion Health",
+    "plan": "growth",
+    "industry": "healthtech",
+    "seats": 48,
+    "mrr": 3200,
+    "joined_date": "2025-11-02",
+    "customer_product_name": "PatientFlow"
+  },
+  {
+    "company_id": "c_010",
+    "company_name": "Nimbus Labs",
+    "plan": "starter",
+    "industry": "saas",
+    "seats": 6,
+    "mrr": 420,
+    "joined_date": "2026-01-15",
+    "customer_product_name": "CloudSketch"
+  },
+  {
+    "company_id": "c_011",
+    "company_name": "Vertex Mobility",
+    "plan": "enterprise",
+    "industry": "logistics",
+    "seats": 95,
+    "mrr": 8900,
+    "joined_date": "2024-08-20",
+    "customer_product_name": "FleetPulse"
+  }
+]
