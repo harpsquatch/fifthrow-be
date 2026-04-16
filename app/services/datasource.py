@@ -11,6 +11,15 @@ from typing import Optional
 
 
 class DataSource(ABC):
+    @abstractmethod
+    async def product_context(self) -> list[dict]:
+        """
+        Returns product/workspace identity metadata.
+
+        Returns:
+            [{"workspace_id":"...","product_name":"...","product_description":"...",
+              "company_name":"...","timezone":"...","default_currency":"..."}]
+        """
 
     @abstractmethod
     async def feature_trend(
@@ -66,8 +75,10 @@ class DataSource(ABC):
         Return accounts, optionally filtered by plan and/or industry.
 
         Returns:
-            [{"company_id": "...", "company_name": "Acme Corp", "plan": "enterprise",
-              "industry": "fintech", "seats": 120, "mrr": 12500.0, "joined_date": "2024-02-23"}, ...]
+            [{"company_id": "...", "company_name": "Acme Corp",
+              "customer_product_name": "AcmeFlow", "plan": "enterprise",
+              "industry": "fintech", "seats": 120, "mrr": 12500.0,
+              "joined_date": "2024-02-23"}, ...]
         """
 
     @abstractmethod

@@ -12,7 +12,7 @@ _REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(_REPO_ROOT))
 
 from app.db.base import AsyncSessionLocal
-from app.db.models import Account, Event, Note, Plan
+from app.db.models import Account, Event, Note, Plan, ProductContext
 
 
 FEATURES: list[str] = [
@@ -29,6 +29,7 @@ FEATURES: list[str] = [
 @dataclass(frozen=True)
 class AccountSeed:
     company_name: str
+    customer_product_name: str
     plan: Plan
     industry: str
     seats: int
@@ -133,16 +134,16 @@ async def seed() -> None:
 
     account_seeds: list[AccountSeed] = [
         # Enterprise (fintech/healthtech), ~$5-15k MRR
-        AccountSeed("Acme Corp", Plan.enterprise, "fintech", seats=120, mrr=12500.0, joined_date=today - timedelta(days=420)),
-        AccountSeed("Glacier Tech", Plan.enterprise, "fintech", seats=80, mrr=8200.0, joined_date=today - timedelta(days=260)),
-        AccountSeed("Bluebird Inc", Plan.enterprise, "healthtech", seats=150, mrr=15200.0, joined_date=today - timedelta(days=610)),
+        AccountSeed("Acme Corp", "AcmeFlow", Plan.enterprise, "fintech", seats=120, mrr=12500.0, joined_date=today - timedelta(days=420)),
+        AccountSeed("Glacier Tech", "LedgerPulse", Plan.enterprise, "fintech", seats=80, mrr=8200.0, joined_date=today - timedelta(days=260)),
+        AccountSeed("Bluebird Inc", "CarePath", Plan.enterprise, "healthtech", seats=150, mrr=15200.0, joined_date=today - timedelta(days=610)),
         # Growth (saas/ecommerce/healthtech), ~$1-3k MRR
-        AccountSeed("Cascade AI", Plan.growth, "saas", seats=35, mrr=2400.0, joined_date=today - timedelta(days=180)),
-        AccountSeed("Drift Labs", Plan.growth, "ecommerce", seats=28, mrr=1650.0, joined_date=today - timedelta(days=140)),
-        AccountSeed("Harbor Cloud", Plan.growth, "healthtech", seats=40, mrr=2950.0, joined_date=today - timedelta(days=210)),
+        AccountSeed("Cascade AI", "SprintBoard", Plan.growth, "saas", seats=35, mrr=2400.0, joined_date=today - timedelta(days=180)),
+        AccountSeed("Drift Labs", "CartPilot", Plan.growth, "ecommerce", seats=28, mrr=1650.0, joined_date=today - timedelta(days=140)),
+        AccountSeed("Harbor Cloud", "ClinicOps", Plan.growth, "healthtech", seats=40, mrr=2950.0, joined_date=today - timedelta(days=210)),
         # Starter (logistics/saas), ~$200-500 MRR
-        AccountSeed("Echo Systems", Plan.starter, "logistics", seats=5, mrr=350.0, joined_date=today - timedelta(days=60)),
-        AccountSeed("Falcon Analytics", Plan.starter, "saas", seats=8, mrr=450.0, joined_date=today - timedelta(days=75)),
+        AccountSeed("Echo Systems", "RouteNest", Plan.starter, "logistics", seats=5, mrr=350.0, joined_date=today - timedelta(days=60)),
+        AccountSeed("Falcon Analytics", "SignalDeck", Plan.starter, "saas", seats=8, mrr=450.0, joined_date=today - timedelta(days=75)),
     ]
 
     notes_seed: list[tuple[str, list[str]]] = [
@@ -158,13 +159,29 @@ async def seed() -> None:
         await session.execute(delete(Event))
         await session.execute(delete(Account))
         await session.execute(delete(Note))
+        await session.execute(delete(ProductContext))
         await session.commit()
+
+        session.add(
+            ProductContext(
+                product_name="Fifthrow Analytics",
+                product_description=(
+                    "A B2B SaaS product analytics platform for PMs, growth, and data teams. "
+                    "Tracks feature adoption, activation, retention, and account health."
+                ),
+                company_name="Fifthrow",
+                timezone="UTC",
+                default_currency="USD",
+            )
+        )
+        await session.flush()
 
         accounts: list[Account] = []
         for s in account_seeds:
             accounts.append(
                 Account(
                     company_name=s.company_name,
+                    customer_product_name=s.customer_product_name,
                     plan=s.plan,
                     industry=s.industry,
                     seats=s.seats,

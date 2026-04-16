@@ -1,0 +1,23 @@
+[
+  {
+    "note_id": "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa",
+    "timestamp": "2026-04-15T09:30:00Z",
+    "author": "pm@northstar",
+    "content": "Users report confusion in the new funnel step selector.",
+    "tags": [
+      "funnel_analysis",
+      "ux",
+      "release"
+    ]
+  },
+  {
+    "note_id": "bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb",
+    "timestamp": "2026-04-16T13:10:00Z",
+    "author": "analyst@northstar",
+    "content": "AI assistant usage jumped after surfacing it in the top nav.",
+    "tags": [
+      "ai_assistant",
+      "adoption"
+    ]
+  }
+]

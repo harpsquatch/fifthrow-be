@@ -54,6 +54,11 @@ class UploadedDataSource(DataSource):
         # company_id → plan (populated from uploaded accounts)
         self._plan_index: dict[str, str] = {}
 
+    async def product_context(self) -> list[dict]:
+        # Upload schema currently supports events/accounts/notes only.
+        # Product identity remains sourced from base datasource.
+        return []
+
     # ------------------------------------------------------------------
     # Bucket loaders
     # ------------------------------------------------------------------
@@ -179,6 +184,7 @@ class UploadedDataSource(DataSource):
             out.append({
                 "company_id": str(a.get("company_id", "")),
                 "company_name": str(a.get("company_name", "")),
+                "customer_product_name": str(a.get("customer_product_name", "")),
                 "plan": str(a.get("plan", "")),
                 "industry": str(a.get("industry", "")),
                 "seats": int(a.get("seats", 0)),

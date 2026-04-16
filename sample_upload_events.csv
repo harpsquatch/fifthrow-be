@@ -1,0 +1,4 @@
+event_name,timestamp,distinct_id,company_id,properties
+ai_assistant,2026-04-16T10:12:00Z,user_demo_001,11111111-1111-1111-1111-111111111111,"{""feature"":""ai_assistant"",""action"":""ask"",""duration_ms"":2450,""screen"":""AI/Assistant""}"
+funnel_analysis,2026-04-16T11:03:00Z,user_demo_002,22222222-2222-2222-2222-222222222222,"{""feature"":""funnel_analysis"",""action"":""open"",""duration_ms"":1520,""screen"":""Analyze/Funnels""}"
+event_explorer,2026-04-16T12:44:00Z,user_demo_003,11111111-1111-1111-1111-111111111111,"{""feature"":""event_explorer"",""action"":""filter"",""duration_ms"":860,""screen"":""Explore/Events""}"

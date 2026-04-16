@@ -15,6 +15,19 @@ class Plan(str, enum.Enum):
     enterprise = "enterprise"
 
 
+class ProductContext(Base):
+    __tablename__ = "product_context"
+
+    workspace_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
+    )
+    product_name: Mapped[str] = mapped_column(String, nullable=False)
+    product_description: Mapped[str] = mapped_column(Text, nullable=False)
+    company_name: Mapped[str] = mapped_column(String, nullable=False)
+    timezone: Mapped[str] = mapped_column(String, nullable=False, default="UTC")
+    default_currency: Mapped[str] = mapped_column(String, nullable=False, default="USD")
+
+
 class Account(Base):
     __tablename__ = "accounts"
 
@@ -22,6 +35,7 @@ class Account(Base):
         UUID(as_uuid=True), primary_key=True, default=uuid.uuid4
     )
     company_name: Mapped[str] = mapped_column(String, nullable=False)
+    customer_product_name: Mapped[str] = mapped_column(String, nullable=False, default="")
     plan: Mapped[Plan] = mapped_column(Enum(Plan), nullable=False)
     industry: Mapped[str] = mapped_column(String, nullable=False)
     seats: Mapped[int] = mapped_column(Integer, nullable=False, default=1)

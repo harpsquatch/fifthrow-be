@@ -19,6 +19,19 @@ class MergedDataSource(DataSource):
         self._base = base
         self._overlay = overlay
 
+    async def product_context(self) -> list[dict]:
+        base = await self._base.product_context()
+        over = await self._overlay.product_context()
+        seen: set[str] = set()
+        out: list[dict] = []
+        for r in base + over:
+            wid = r.get("workspace_id", "")
+            if wid in seen:
+                continue
+            seen.add(wid)
+            out.append(r)
+        return out
+
     # ------------------------------------------------------------------
     # Aggregated methods — merge by grouping key, sum counts
     # ------------------------------------------------------------------

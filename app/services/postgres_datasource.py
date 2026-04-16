@@ -10,7 +10,7 @@ from sqlalchemy import cast, func, select, text
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.db.models import Account, Event, Note, Plan
+from app.db.models import Account, Event, Note, Plan, ProductContext
 from app.services.datasource import DataSource
 
 
@@ -40,6 +40,20 @@ class PostgresDataSource(DataSource):
     def __init__(self, session: AsyncSession) -> None:
         self._s = session
 
+    async def product_context(self) -> list[dict]:
+        rows = (await self._s.execute(select(ProductContext))).scalars().all()
+        return [
+            {
+                "workspace_id": str(p.workspace_id),
+                "product_name": p.product_name,
+                "product_description": p.product_description,
+                "company_name": p.company_name,
+                "timezone": p.timezone,
+                "default_currency": p.default_currency,
+            }
+            for p in rows
+        ]
+
     # ------------------------------------------------------------------
     # feature_trend
     # ------------------------------------------------------------------
@@ -56,7 +70,7 @@ class PostgresDataSource(DataSource):
         day_col = func.date_trunc("day", Event.timestamp).label("day")
         q = (
             select(day_col, func.count().label("count"))
-            .where(Event.event_name == feature, Event.timestamp >= since)
+            .where(Event.event_name == feature, Event.timestamp >= since, func.date(Event.timestamp) < func.current_date())
         )
 
         if plan_enum is not None:
@@ -162,6 +176,7 @@ class PostgresDataSource(DataSource):
             {
                 "company_id": str(a.company_id),
                 "company_name": a.company_name,
+                "customer_product_name": a.customer_product_name,
                 "plan": a.plan.value,
                 "industry": a.industry,
                 "seats": a.seats,
@@ -231,7 +246,7 @@ class PostgresDataSource(DataSource):
         q = (
             select(day_col, Account.plan.label("plan"), func.count().label("count"))
             .join(Account, Account.company_id == Event.company_id)
-            .where(Event.event_name == event_name, Event.timestamp >= since)
+            .where(Event.event_name == event_name, Event.timestamp >= since, func.date(Event.timestamp) < func.current_date())
         )
 
         if plan_enum is not None:

@@ -33,6 +33,22 @@ TOOL_SCHEMAS: list[dict] = [
     {
         "type": "function",
         "function": {
+            "name": "product_context",
+            "description": (
+                "Returns platform/workspace metadata (Fifthrow platform identity), "
+                "such as product_name, product_description, company_name, timezone, "
+                "and default_currency. This is platform metadata, not customer product identity."
+            ),
+            "parameters": {
+                "type": "object",
+                "properties": {},
+                "required": [],
+            },
+        },
+    },
+    {
+        "type": "function",
+        "function": {
             "name": "feature_trend",
             "description": (
                 "Returns daily event counts for a single feature over the last N days. "
@@ -98,8 +114,9 @@ TOOL_SCHEMAS: list[dict] = [
         "function": {
             "name": "account_list",
             "description": (
-                "Returns accounts with their plan, industry, MRR, and seat count. "
-                "Use to identify which companies are active, large, or in a specific vertical."
+                "Returns accounts with company metadata including customer_product_name, "
+                "plan, industry, MRR, and seat count. Use this when asked which customer "
+                "products are being tracked."
             ),
             "parameters": {
                 "type": "object",
@@ -204,6 +221,7 @@ TOOL_SCHEMAS: list[dict] = [
 # ---------------------------------------------------------------------------
 
 _DISPATCH: dict[str, str] = {
+    "product_context": "product_context",
     "feature_trend": "feature_trend",
     "feature_distribution": "feature_distribution",
     "compare_features": "compare_features",

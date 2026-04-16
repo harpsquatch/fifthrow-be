@@ -11,3 +11,4 @@ class ChatResponse(BaseModel):
     answer: str
     conversation_id: str
     used_tools: list[str]
+    suggested_followups: list[str] = []
